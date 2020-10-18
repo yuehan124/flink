@@ -212,7 +212,7 @@ public class SlotSharingManager {
 
 	private Stream<MultiTaskSlotInfo> createValidMultiTaskSlotInfos(Map<AllocationID, MultiTaskSlot> taskExecutorSlots, AbstractID groupId) {
 		final double taskExecutorUtilization = calculateTaskExecutorUtilization(taskExecutorSlots, groupId);
-
+		// 不能包含该jobVertexId，因为同一JobVertex是不能在一个slot里。只检查了self和它的children()，所以MultiTaskSlot在非CoLocation不会嵌套
 		return taskExecutorSlots.values().stream()
 			.filter(validMultiTaskSlotAndDoesNotContain(groupId))
 			.map(multiTaskSlot ->
@@ -320,6 +320,7 @@ public class SlotSharingManager {
 		// every TaskSlot has an associated slot request id
 		private final SlotRequestId slotRequestId;
 
+		// groupId就是顶点id，根据节点没有groupId，其他都有
 		// all task slots except for the root slots have a group id assigned
 		@Nullable
 		private final AbstractID groupId;

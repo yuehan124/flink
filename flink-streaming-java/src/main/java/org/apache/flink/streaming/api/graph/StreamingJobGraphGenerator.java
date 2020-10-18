@@ -739,6 +739,11 @@ public class StreamingJobGraphGenerator {
 		return vertexRegionSlotSharingGroups;
 	}
 
+	/**
+	 * source.getTransformation().setCoLocationGroupKey("co1"); 每个Key生成一个CoLocationGroup，相同key使用同一个CoLocationGroup
+	 * 生成CoLocationGroup后字符串key就被扔掉了，使用AbstractID来唯一标记。不允许相同key出现在不同SlotSharingGroup下，意味着CoLocationGroup
+	 * 不能跨越SlotSharingGroup。
+	 */
 	private void setCoLocation() {
 		final Map<String, Tuple2<SlotSharingGroup, CoLocationGroup>> coLocationGroups = new HashMap<>();
 

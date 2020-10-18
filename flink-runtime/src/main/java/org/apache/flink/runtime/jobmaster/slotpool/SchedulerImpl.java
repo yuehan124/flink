@@ -448,6 +448,7 @@ public class SchedulerImpl implements Scheduler {
 			SlotProfile slotProfile,
 			@Nullable Time allocationTimeout) {
 
+		// 首先从ResolvedRootSlot中找到不存在该groupId（顶点）的slot，Task按照并行度拆分，subtask不能在一个sharingslot中。
 		Collection<SlotSelectionStrategy.SlotInfoAndResources> resolvedRootSlotsInfo =
 				slotSharingManager.listResolvedRootSlotInfo(groupId);
 
@@ -498,9 +499,11 @@ public class SchedulerImpl implements Scheduler {
 			return multiTaskSlotLocality;
 		}
 
+		// 接着从UnresolvedRootSlot中找到不存在该groupId（顶点）的slot
 		// there is no slot immediately available --> check first for uncompleted slots at the slot sharing group
 		SlotSharingManager.MultiTaskSlot multiTaskSlot = slotSharingManager.getUnresolvedRootSlot(groupId);
 
+		// 如果没找到则说明该任务并行度>已经存在的RootSlot数量。此时需要新创建rootSlot
 		if (multiTaskSlot == null) {
 			// it seems as if we have to request a new slot from the resource manager, this is always the last resort!!!
 			final CompletableFuture<PhysicalSlot> slotAllocationFuture = requestNewAllocatedSlot(
@@ -534,7 +537,7 @@ public class SchedulerImpl implements Scheduler {
 					}
 				});
 		}
-
+		// 返回RootSlot（可能是已存在的也可能是新创建的），而后都会创建一个SingleTaskSlot
 		return SlotSharingManager.MultiTaskSlotLocality.of(multiTaskSlot, Locality.UNKNOWN);
 	}
 
